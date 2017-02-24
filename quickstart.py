@@ -17,7 +17,7 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/calendar-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_id.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
@@ -50,6 +50,46 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+def eventCreator(title,location,description):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=http)
+
+    event = {
+      'summary': title,
+      'location': location,
+      'description': description,
+      'start': {
+        'dateTime': '2017-02-24T09:00:00-07:00',
+        'timeZone': 'America/Los_Angeles',
+      },
+      'end': {
+        'dateTime': '2017-02-24T09:20:00-07:00',
+        'timeZone': 'America/Los_Angeles',
+      },
+      'recurrence': [
+        'RRULE:FREQ=DAILY;COUNT=2'
+      ],
+      'attendees': [
+        {'email': 'lpage@example.com'},
+        {'email': 'sbrin@example.com'},
+      ],
+      'reminders': {
+        'useDefault': False,
+        'overrides': [
+          {'method': 'email', 'minutes': 24 * 60},
+          {'method': 'popup', 'minutes': 10},
+        ],
+      },
+    }
+
+    event = service.events().insert(calendarId='primary', body=event).execute()
+    print ('Event created:'+`(event.get('htmlLink'))` )
+
+
+
+# Change the scope to 'https://www.googleapis.com/auth/calendar' and delete any
+# stored credentials.
 def main():
     """Shows basic usage of the Google Calendar API.
 
@@ -74,5 +114,6 @@ def main():
         print(start, event['summary'])
 
 
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+#    main()
+eventCreator('Test','800 Howard St., San Francisco, CA 94103',"A chance to hear more about Google\'s developer products.")
