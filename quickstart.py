@@ -15,14 +15,19 @@ try:
 except ImportError:
     flags = None
 
-# If modifying these scopes, delete your previously saved credentials
+# If modifying these scopes, delete your previously saved credentials 
+# These credentials will be at top folder
+# use this if working on a server--noauth_local_webserver
+
 # at ~/.credentials/calendar-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/calendar'
-CLIENT_SECRET_FILE = 'client_id.json'
+CLIENT_SECRET_FILE = 'client_id.json' #this is a local file please substitute with your own given by google
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 
+
 def get_credentials():
+  #might need to find a way to cycle through credentials....
     """Gets valid user credentials from storage.
 
     If nothing has been stored, or if the stored credentials are invalid,
