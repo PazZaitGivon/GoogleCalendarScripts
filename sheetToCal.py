@@ -2,6 +2,7 @@ from __future__ import print_function
 import httplib2
 import os
 import datetime
+import json
 
 from apiclient import discovery
 from oauth2client import client
@@ -16,9 +17,14 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/calendar'
-CLIENT_SECRET_FILE = 'client_id.json'
-APPLICATION_NAME = 'Google Sheets API Python Quickstart'
-
+CLIENT_SECRET_FILE = 'client_id.json'#replace this with a file you get from google
+APPLICATION_NAME = 'Croudsourcable Google Calendar'
+with open('SheetAndCalendarId.json') as json_file: #replace this with a specially formatted JSON file, I will post an example
+  IDENTIFIERS = json.load(json_file)
+  print (IDENTIFIERS)
+  sheets=IDENTIFIERS["sheetIds"]
+  formName0=sheets[0]["name"]
+  sheetId0=sheets[0]["id"]
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -49,12 +55,7 @@ def get_credentials():
     return credentials
 
 def main():
-    """Shows basic usage of the Sheets API.
-
-    Creates a Sheets API service object and prints the names and majors of
-    students in a sample spreadsheet:
-    https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-    """
+    """Shows basic usage of the Sheets API."""
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
@@ -62,8 +63,8 @@ def main():
     service = discovery.build('sheets', 'v4', http=http,
                               discoveryServiceUrl=discoveryUrl)
 
-    spreadsheetId = '10CsfbQmjRWohprF_u-0lGvpPDOp2w5XkRp7dfsCtNUc'
-    rangeName = "Form Responses 1"
+    spreadsheetId = sheetId0
+    rangeName = formName0
     result = service.spreadsheets().values().get(
         spreadsheetId=spreadsheetId, range=rangeName).execute()
     values = result.get('values', [])
