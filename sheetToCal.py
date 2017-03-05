@@ -8,6 +8,7 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+from datetime import datetime, timedelta
 
 try:
     import argparse
@@ -19,6 +20,7 @@ except ImportError:
 SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'client_id.json'#replace this with a file you get from google
 APPLICATION_NAME = 'Croudsourcable Google Calendar'
+TIMEZONE='-06:00'
 with open('SheetAndCalendarId.json') as json_file: #replace this with a specially formatted JSON file, I will post an example
   IDENTIFIERS = json.load(json_file)
   print (IDENTIFIERS)
@@ -53,6 +55,36 @@ def get_credentials():
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
+def reformatSheetDateToCalendar(date):#date is a string in the format *m/*d/yyyy
+  #given: 3/4/2017 goal: '2017-03-04T09:00:00-06:00', note time is later so only first part here
+  month=date[0]
+  day=date[1]
+  year=date[2]
+  if len(month)==1:
+  #  print("zero padding month")
+    month='0'+month
+  if len(day)==1:
+  #  print("zero padding day")
+    day='0'+day
+  newDate=year+'-'+month+'-'+day
+  print(newDate)
+  return newDate
+def reformatSheetTimeToCalendar(time,timeZone):
+  #given 9:30:00 PM '2017-03-04T21:30:00-06:00',
+  #first take care of PM
+  newTime=time.split(' ')[0]
+  newTimeSplit=newTime.split(':')
+  hours=int(newTimeSplit[0])
+  if (time.split(' ')[1]=="PM"):
+  #  print("PM of"+`hours`)
+    stringHours=`hours+12`
+  elif(hours<10):
+    stringHours='0'+`hours`
+  else:
+    stringHours=`hours`
+  newTime=stringHours+':'+newTimeSplit[1]+':'+newTimeSplit[2]+timeZone
+  print (newTime)
+  return newTime
 
 def main():
     """Shows basic usage of the Sheets API."""
@@ -86,16 +118,28 @@ def main():
               print("still undecided on "+`rowIndex`)
             elif(int(`values[rowIndex][7]`[2:-1])==1):
                 print(`values[rowIndex]`)
-                date=values[rowIndex][9]
-                print(date)#we may need to zero pad month and day
-                if(date[1]=='/'):
-                  print("zero padding month")
-                  date='0'+date
-                  print(date)
-                if(date[4]=='/'):
-                  print("zero padding day")
-                  date=date[0:3]+'0'+date[3:]
-                  print(date)
+                title=values[rowIndex][1]
+                location=values[rowIndex][5]
+                description=values[rowIndex][6]
+                date=reformatSheetDateToCalendar(values[rowIndex][9].split('/'))#incrament date if starttime>endtime
+                startTime=reformatSheetTimeToCalendar(values[rowIndex][4],TIMEZONE)
+                startHour=int(startTime[:2])
+                #print ("startTime from main"+str(int(startTime[:2])) )#this is the  
+                startTime=date+'T'+startTime
+                endTime=reformatSheetTimeToCalendar(values[rowIndex][8],TIMEZONE)
+                #'2017-03-04T21:30:00-06:00'
+                endHour=int(endTime[:2])
+                if(endHour<startHour):#incrament date id ends before starts
+                  finalDate= datetime.strptime(date,'%Y-%m-%d')
+                  finalDate=finalDate+timedelta(days=1)
+                  finalDateString=finalDate.strftime('%Y-%m-%d')
+                else:
+                  finalDateString=date
+
+                endTime=finalDateString+'T'+endTime
+                #print(startTime)
+                #print(endTime)
+                eventCreator(title,startTime, endTime, location,description)
                 #What we really want to do here is make a calendar statement, switch to -100
             elif(int(`values[rowIndex][7]`[2:-1])==0):#this event was rejected
                 print("was zero")#DEBUG
