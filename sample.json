@@ -1,0 +1,14 @@
+{
+	"sheetIds":
+	[
+		{
+			"name":"THE_NAME_OF_YOUR_SPREADSHEET",
+			"id":"SPREADSHEET_ID_FOUND_IN_URL/d/THIS_IS_THE_ID/edit"
+		}
+	],
+
+	"calendarIDs":
+	[
+		{"id":"ID_OF_CALENDAR_TO_WRITE_TO_(NOT_YET_IMPLEMENTED)"}
+	]
+}
